@@ -21,6 +21,7 @@ namespace DISP
         static int numberOfAlotMovements = 0;
         static string previousMovement = "tmp";
         const string zigbeeLedAddress = "zigbee2mqtt/0x680ae2fffec0cbba";
+        static bool GoOutOfLoop = false;
 
         static void Main(string[] args)
         {
@@ -58,7 +59,7 @@ namespace DISP
 
             while (true)
             {
-                if (numberOfAlotMovements == 3)
+                if (numberOfAlotMovements == 2)
                 {
                     player.SoundLocation = "C:\\Users\\mongl\\source\\repos\\DISP\\DISP\\GodmorgenPIllerWav.wav";
                     player.Load();
@@ -71,18 +72,18 @@ namespace DISP
                         client.Publish(zigbeeLedAddress + "/set", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(led1)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
 
 
-                        Thread.Sleep(5000);
+                        Thread.Sleep(2500);
 
                         col1.r = 0;
                         col1.g = 200;
                         client.Publish(zigbeeLedAddress + "/set", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(led1)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
 
 
-                        Thread.Sleep(5000);
+                        Thread.Sleep(2500);
                         col1.r = 200;
                         col1.g = 0;
 
-                        if (firstStopWatch.Elapsed.Seconds >= 20)
+                        if (firstStopWatch.Elapsed.Seconds >= 20 && GoOutOfLoop == false)
                         {
                             player.SoundLocation = "C:\\Users\\mongl\\source\\repos\\DISP\\DISP\\SpisDinePillerWav.wav";
                             player.Load();
@@ -93,6 +94,7 @@ namespace DISP
                         if (pillsTaken)
                         {
                             firstStopWatch.Stop();
+                            
                             break;
                         }
                     }
@@ -109,14 +111,18 @@ namespace DISP
                     client.Publish(zigbeeLedAddress + "/set", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(led2)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
 
                     //Checks if the person do not put the pills back.
-                    var secondStopWatch = new Stopwatch();
-                    secondStopWatch.Start();
+
+                    firstStopWatch.Reset();
+                    firstStopWatch.Start();
 
                     while (true)
                     {
-                        if (secondStopWatch.Elapsed.Seconds >= 20)
+                        if (firstStopWatch.Elapsed.Seconds >= 10)
                         {
-                            SystemSounds.Exclamation.Play();
+                            player.SoundLocation = "C:\\Users\\mongl\\source\\repos\\DISP\\DISP\\PillerpåpladsikkespisientimeWav.wav";
+                            player.Load();
+                            player.Play();
+                            firstStopWatch.Restart();
                         }
 
                         //If the pills are put back we stop the timing.
@@ -127,7 +133,7 @@ namespace DISP
 
                     }
 
-                    secondStopWatch.Stop();
+                    firstStopWatch.Stop();
 
                     //Turn off the alarm
                     client.Publish(zigbeeLedAddress + "/set", Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(led)), MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false);
@@ -207,6 +213,7 @@ namespace DISP
             if (message == "Off")
             {
                 pillsTaken = true;
+                GoOutOfLoop = true;
             }
         }
     }
