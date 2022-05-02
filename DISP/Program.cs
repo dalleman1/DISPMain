@@ -116,10 +116,7 @@ namespace DISP
                     {
                         if (secondStopWatch.Elapsed.Seconds >= 20)
                         {
-                            //If a specific amount of time passes we notify the person to put back the pills.
-                            /*player.SoundLocation = "sæt pillerne tilbage";
-                            player.Load();
-                            player.Play();*/
+                            SystemSounds.Exclamation.Play();
                         }
 
                         //If the pills are put back we stop the timing.
